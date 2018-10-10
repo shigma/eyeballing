@@ -159,7 +159,7 @@ eval("var g;\r\n\r\n// This works in non-strict mode\r\ng = (function() {\r\n\tr
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("module.exports = {\r\n}\r\n\r\nmodule.exports['componentName'] = 'app';\r\n\r\nmodule.exports.render = function() {\r\n  with(this){return _c('div',[_v(_s(233))])}\r\n}\r\n\n\n//# sourceURL=webpack:///./temp/app.vue.js?");
+eval("module.exports = {\r\n  mounted() {\r\n    window.vm = this\r\n    this._context = this.$refs.canvas.getContext('2d')\r\n    this._context.fillStyle = 'yellow'\r\n    this._context.fillRect(20, 20, 150, 150)\r\n  }\r\n}\r\n\r\nmodule.exports['componentName'] = 'app';\r\n\r\nif (!module.exports.mixins) module.exports.mixins = [];\r\nmodule.exports.mixins.push({\r\n  mounted() {\r\n    this.$el.setAttribute('id-3iuvyv', '');\r\n  }\r\n});\r\n\r\nmodule.exports.render = function() {\r\n  with(this){return _c('div',[_c('canvas',{ref:\"canvas\",attrs:{\"height\":\"400\",\"width\":\"300\"}}),_v(\" \"),_c('div',[_v(_s(233))])])}\r\n}\r\n\n\n//# sourceURL=webpack:///./temp/app.vue.js?");
 
 /***/ }),
 
@@ -170,7 +170,7 @@ eval("module.exports = {\r\n}\r\n\r\nmodule.exports['componentName'] = 'app';\r\
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("const Vue = __webpack_require__(/*! vue/dist/vue.runtime.common */ \"./node_modules/vue/dist/vue.runtime.common.js\")\r\n\r\nnew Vue(__webpack_require__(/*! @/app.vue */ \"./temp/app.vue.js\")).$mount('#app')\r\n\n\n//# sourceURL=webpack:///./temp/index.js?");
+eval("const Vue = __webpack_require__(/*! vue/dist/vue.runtime.common */ \"./node_modules/vue/dist/vue.runtime.common.js\")\r\n\r\nnew Vue(__webpack_require__(/*! ./app.vue */ \"./temp/app.vue.js\")).$mount('#app')\r\n\n\n//# sourceURL=webpack:///./temp/index.js?");
 
 /***/ })
 

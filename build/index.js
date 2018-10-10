@@ -1,7 +1,8 @@
+const css = new (require('clean-css'))()
 const webpack = require('webpack')
 const program = require('commander')
-const sfc2js = require('sfc2js')
 const html = require('html-minifier')
+const sfc2js = require('sfc2js')
 const path = require('path')
 const fs = require('fs')
 
@@ -18,10 +19,11 @@ sfc2js.install(require('@sfc2js/sass'), {
   outputStyle: 'compressed',
 })
 
-sfc2js.transpile({
+const sfc = sfc2js.transpile({
   baseDir: fullPath(),
   srcDir: 'src',
   outDir: 'temp',
+  outCSSFile: null,
 })
 
 fs.writeFileSync(
@@ -32,15 +34,18 @@ fs.writeFileSync(
   })
 )
 
+const outCSS = css.minify(fs.readFileSync(fullPath('src/index.css')))
+if (outCSS.errors.length) {
+  console.log(outCSS.errors.join('\n'))
+  process.exit(1)
+} else {
+  fs.writeFileSync(fullPath('docs/index.css'), outCSS.styles + sfc.css)
+}
+
 const compiler = webpack({
   target: 'web',
   mode: program.prod ? 'production' : 'development',
   entry: fullPath('temp/index.js'),
-  resolve: {
-    alias: {
-      '@': fullPath('temp')
-    }
-  },
   output: {
     path: fullPath('docs'),
     filename: 'index.js',

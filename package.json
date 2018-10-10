@@ -1,23 +1,28 @@
 {
   "name": "eyeballing",
   "version": "1.0.0",
+  "main": "index.js",
   "description": "An eyeballing test.",
   "dependencies": {
     "vue": "^2.5.17"
   },
   "devDependencies": {
     "@sfc2js/sass": "^1.0.1",
+    "clean-css": "^4.2.1",
     "commander": "^2.19.0",
     "eslint": "^5.6.1",
     "eslint-plugin-vue": "^5.0.0-beta.3",
     "html-minifier": "^3.5.20",
     "node-sass": "^4.9.3",
+    "opn": "^5.4.0",
     "sfc2js": "^3.3.2",
     "webpack": "^4.20.2"
   },
   "scripts": {
     "test": "eslint .",
-    "build": "node build"
+    "start": "node .",
+    "build": "node build --prod",
+    "dev": "node build && node ."
   },
   "author": "shigma <1700011071@pku.edu.cn>",
   "license": "MIT"
