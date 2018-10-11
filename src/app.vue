@@ -9,9 +9,8 @@ module.exports = {
     status: 0,
     mouse: null,
     index: 0,
-    round: 0,
     tools: {},
-    result: [
+    results: [
       new Array(tests.length)
     ],
   }),
@@ -28,6 +27,12 @@ module.exports = {
     data() {
       const dataset = this.test.dataset
       return dataset[this.round % dataset.length]
+    },
+    round() {
+      return this.results.length - 1
+    },
+    result() {
+      return this.results[this.round]
     },
   },
 
@@ -47,6 +52,10 @@ module.exports = {
       this._ctx.$points = []
       this._ctx.lineWidth = 2
       this._ctx.clearRect(0, 0, 300, 400)
+      if (!this.data._init && this.test.init) {
+        this.test.init(this.data)
+        this.data._init = true
+      }
       if (this.test.base) {
         this.test.base.call(this.tools, this.data)
       }
@@ -57,7 +66,7 @@ module.exports = {
       if (this.status && this.test.test) {
         this._ctx.$agent = 'test'
         const diff = this.test.test.call(this.tools, this.data, this.mouse)
-        this.result[this.round][this.index] = diff < 100 ? diff : 'failed'
+        this.result[this.index] = diff < 100 ? diff : 'failed'
       }
       this._ctx.lineWidth = 1
       this._ctx.fillStyle = 'white'
@@ -82,13 +91,13 @@ module.exports = {
       this.refresh()
     },
     nextTest() {
-      if (this.status) return
       this.status = 0
       this.index += 1
       if (this.index === tests.length) {
         this.index = 0
-        this.round += 1
-        this.result.push(new Array(tests.length))
+        if (this.result.some(diff => typeof diff === 'number')) {
+          this.results.push(new Array(tests.length))
+        }
       }
       this.mouse = null
       this.refresh()
@@ -110,15 +119,17 @@ module.exports = {
       <h2>{{ title }}</h2>
       <div class="caption">{{ test.caption }}</div>
       <div class="buttons">
-        <div class="next" @click="nextTest" :class="{ disabled: !status }">Next</div>
+        <div class="next" @click="nextTest">
+          {{ status ? 'Next' : 'Skip' }}
+        </div>
       </div>
       <hr/>
       <h2>Result</h2>
       <table>
-        <tr v-for="(_, tid) in result[0]" :key="tid">
-          <td>{{ tests[tid].name }}</td>
-          <td v-for="(round, rid) in result" :key="rid">
-            {{ showDiff(round[tid]) }}
+        <tr v-for="(_, testId) in results[0]" :key="testId">
+          <td>{{ tests[testId].name }}</td>
+          <td v-for="(result, roundId) in results" :key="roundId">
+            {{ showDiff(result[testId]) }}
           </td>
         </tr>
       </table>
@@ -178,11 +189,6 @@ module.exports = {
 
       &:hover {
         background-color: bisque;
-      }
-
-      &.disabled {
-        cursor: default;
-        background-color: lightgray;
       }
     }
   }

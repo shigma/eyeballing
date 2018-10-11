@@ -3,6 +3,13 @@ export interface Point {
   y: number
 }
 
+export interface Line {
+  x: number
+  y: number
+  k: number
+  b: number
+}
+
 function lineStrokeStyle(agent: string): string {
   switch(agent) {
     case 'user': return 'blue'
@@ -26,15 +33,33 @@ export function circle(p: Point, r: number): void {
   this.stroke()
 }
 
-export function segment(p1: Point, p2: Point): void {
+export function segment(p1: Point, p2: Point, width = 2): void {
+  const lineWidth = this.lineWidth
+  this.lineWidth = width || lineWidth
   this.strokeStyle = lineStrokeStyle(this.$agent)
   this.beginPath()
   this.moveTo(p1.x, p1.y)
   this.lineTo(p2.x, p2.y)
   this.stroke()
+  this.lineWidth = lineWidth
 }
 
-export function halfline(p1: Point, p2: Point): void {
+export function segmentAmong(...pp: Point[]): void {
+  let p1: Point, p2: Point
+  const p0 = pp.shift()
+  if (p0.x - pp[0].x) {
+    p1 = pp.reduce((prev, curr) => prev.x < curr.x ? prev : curr, p0)
+    p2 = pp.reduce((prev, curr) => prev.x > curr.x ? prev : curr, p0)
+  } else {
+    p1 = pp.reduce((prev, curr) => prev.y < curr.y ? prev : curr, p0)
+    p2 = pp.reduce((prev, curr) => prev.y > curr.y ? prev : curr, p0)
+  }
+  segment.call(this, p1, p2)
+}
+
+export function halfline(p1: Point, p2: Point, width = 2): void {
+  const lineWidth = this.lineWidth
+  this.lineWidth = width || lineWidth
   this.strokeStyle = lineStrokeStyle(this.$agent)
   this.beginPath()
   this.moveTo(p1.x, p1.y)
@@ -48,9 +73,12 @@ export function halfline(p1: Point, p2: Point): void {
   }
   this.lineTo(x3, y3)
   this.stroke()
+  this.lineWidth = lineWidth
 }
 
-export function line(p1: Point, p2: Point): void {
+export function line(p1: Point, p2: Point, width = 2): void {
+  const lineWidth = this.lineWidth
+  this.lineWidth = width || lineWidth
   this.strokeStyle = lineStrokeStyle(this.$agent)
   this.beginPath()
   if (p1.x === p2.x) {
@@ -61,14 +89,15 @@ export function line(p1: Point, p2: Point): void {
     this.lineTo(300, (p2.x * p1.y + 300 * p2.y - p1.x * p2.y - 300 * p1.y) / (p2.x - p1.x))
   }
   this.stroke()
+  this.lineWidth = lineWidth
 }
 
-export function point(p: Point): void {
+export function point(p: Point, radius = 3): void {
   const bdColor = pointStrokeStyle(this.$agent)
   this.$points.push(() => {
     this.strokeStyle = bdColor
     this.beginPath()
-    this.arc(p.x, p.y, 3, 0, 2 * Math.PI)
+    this.arc(p.x, p.y, radius, 0, 2 * Math.PI)
     this.fill()
     this.stroke()
   })
