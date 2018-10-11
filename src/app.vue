@@ -3,6 +3,8 @@
 const tests = require('./tests').default
 const tools = require('./palette')
 
+const VERSION = '1.0'
+
 module.exports = {
   data: () => ({
     tests,
@@ -36,6 +38,17 @@ module.exports = {
     },
   },
 
+  created() {
+    let storage
+    try {
+      storage = JSON.parse(localStorage.getItem('shigma.eyeballing'))
+    } catch (error) { null }
+    if (storage && storage.version === VERSION) {
+      this.results = storage.results
+      this.index = storage.current
+    }
+  },
+
   mounted() {
     window.vm = this
     this._ctx = this.$refs.canvas.getContext('2d')
@@ -44,6 +57,15 @@ module.exports = {
       this.tools[key] = tools[key].bind(this._ctx)
     }
     this.refresh()
+
+    addEventListener('beforeunload', () => {
+      if (this.status) this.nextTest()
+      localStorage.setItem('shigma.eyeballing', JSON.stringify({
+        results: this.results,
+        current: this.index,
+        version: VERSION,
+      }))
+    })
   },
 
   methods: {
@@ -97,13 +119,24 @@ module.exports = {
         this.index = 0
         if (this.result.some(diff => typeof diff === 'number')) {
           this.results.push(new Array(tests.length))
+          if (this.results.length > 10) {
+            this.results.shift()
+          }
         }
       }
       this.mouse = null
       this.refresh()
     },
-    showDiff(diff) {
-      if (typeof diff !== 'number') return diff || '--'
+    clearResult() {
+      this.results = [ new Array(tests.length) ]
+      this.index = 0
+      this.status = 0
+    },
+    showDiff(roundId, testId) {
+      const diff = this.results[roundId][testId]
+      if (typeof diff !== 'number') {
+        return roundId === this.round && testId === this.index ? '??' : '--'
+      }
       return diff.toFixed(3).slice(0, 5)
     },
   },
@@ -119,9 +152,8 @@ module.exports = {
       <h2>{{ title }}</h2>
       <div class="caption">{{ test.caption }}</div>
       <div class="buttons">
-        <div class="next" @click="nextTest">
-          {{ status ? 'Next' : 'Skip' }}
-        </div>
+        <div @click="nextTest">{{ status ? 'Next' : 'Skip' }}</div>
+        <div @click="clearResult">Clear</div>
       </div>
       <hr/>
       <h2>Result</h2>
@@ -129,7 +161,7 @@ module.exports = {
         <tr v-for="(_, testId) in results[0]" :key="testId">
           <td>{{ tests[testId].name }}</td>
           <td v-for="(result, roundId) in results" :key="roundId">
-            {{ showDiff(result[testId]) }}
+            {{ showDiff(roundId, testId) }}
           </td>
         </tr>
       </table>
@@ -175,7 +207,7 @@ module.exports = {
   > .buttons {
     margin: 16px 0;
 
-    .next {
+    > div {
       width: 48px;
       padding: 8px;
       cursor: pointer;
@@ -185,10 +217,15 @@ module.exports = {
       text-align: center;
       border-radius: 8px;
       transition: .3s ease;
+      display: inline-block;
       background-color: beige;
 
       &:hover {
         background-color: bisque;
+      }
+
+      &:not(:first-child) {
+        margin-left: 8px;
       }
     }
   }
