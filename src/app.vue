@@ -1,19 +1,35 @@
 <script>
 
 const tests = require('./tests').default
-const tools = require('./tools')
+const tools = require('./palette')
 
 module.exports = {
   data: () => ({
-    /**
-     * - 0: started
-     * - 1: finished
-     */
+    tests,
     status: 0,
     mouse: null,
     index: 0,
+    round: 0,
     tools: {},
+    result: [
+      new Array(tests.length)
+    ],
   }),
+
+  computed: {
+    test() {
+      return this.tests[this.index]
+    },
+    title() {
+      return this.test.name
+        .replace(/^\w|-\w/g, str => str.toUpperCase())
+        .replace(/-/g, ' ')
+    },
+    data() {
+      const dataset = this.test.dataset
+      return dataset[this.round % dataset.length]
+    },
+  },
 
   mounted() {
     window.vm = this
@@ -31,17 +47,17 @@ module.exports = {
       this._ctx.$points = []
       this._ctx.lineWidth = 2
       this._ctx.clearRect(0, 0, 300, 400)
-      const test = tests[this.index]
-      if (test.base) {
-        test.base.call(this.tools, test.dataset[0])
+      if (this.test.base) {
+        this.test.base.call(this.tools, this.data)
       }
-      if (this.mouse && test.draw) {
+      if (this.mouse && this.test.draw) {
         this._ctx.$agent = 'user'
-        test.draw.call(this.tools, test.dataset[0], this.mouse)
+        this.test.draw.call(this.tools, this.data, this.mouse)
       }
-      if (this.status && test.test) {
+      if (this.status && this.test.test) {
         this._ctx.$agent = 'test'
-        console.log(test.test.call(this.tools, test.dataset[0], this.mouse))
+        const diff = this.test.test.call(this.tools, this.data, this.mouse)
+        this.result[this.round][this.index] = diff < 100 ? diff : 'failed'
       }
       this._ctx.lineWidth = 1
       this._ctx.fillStyle = 'white'
@@ -66,11 +82,20 @@ module.exports = {
       this.refresh()
     },
     nextTest() {
+      if (this.status) return
       this.status = 0
       this.index += 1
-      this.index %= tests.length
+      if (this.index === tests.length) {
+        this.index = 0
+        this.round += 1
+        this.result.push(new Array(tests.length))
+      }
       this.mouse = null
       this.refresh()
+    },
+    showDiff(diff) {
+      if (typeof diff !== 'number') return diff || '--'
+      return diff.toFixed(3).slice(0, 5)
     },
   },
 }
@@ -79,12 +104,25 @@ module.exports = {
 
 <template>
   <div>
-    <div class="wrapper">
-      <canvas height="400" width="300" ref="canvas" @mousedown="onMousedown"
-        @mousemove="onMousemove" @mouseleave="onMouseleave"/>
-      <div class="next" @click="nextTest">Next</div>
+    <canvas height="400" width="300" ref="canvas" :class="{ finished: status }"
+      @mousemove="onMousemove" @mouseleave="onMouseleave" @mousedown="onMousedown"/>
+    <div class="container">
+      <h2>{{ title }}</h2>
+      <div class="caption">{{ test.caption }}</div>
+      <div class="buttons">
+        <div class="next" @click="nextTest" :class="{ disabled: !status }">Next</div>
+      </div>
+      <hr/>
+      <h2>Result</h2>
+      <table>
+        <tr v-for="(_, tid) in result[0]" :key="tid">
+          <td>{{ tests[tid].name }}</td>
+          <td v-for="(round, rid) in result" :key="rid">
+            {{ showDiff(round[tid]) }}
+          </td>
+        </tr>
+      </table>
     </div>
-    <div>{{ 233 }}</div>
   </div>
 </template>
 
@@ -93,6 +131,7 @@ module.exports = {
 & {
   top: 0;
   bottom: 0;
+  width: 100vw;
   margin: auto;
   display: table;
   position: absolute;
@@ -101,34 +140,63 @@ module.exports = {
 > * {
   position: relative;
   display: table-cell;
-  vertical-align: middle;
 }
 
-> .wrapper {
-  padding: 0 40px;
+> canvas {
+  margin: 0 40px;
+  border: 1px solid;
+  vertical-align: middle;
 
-  > canvas {
-    border: 1px solid;
+  &:not(.finished) {
     cursor: pointer;
   }
+}
 
-  > .next {
-    transition: .3s ease;
-    position: absolute;
-    font-size: 16px;
-    bottom: 12px;
-    right: 50px;
-    width: 48px;
-    line-height: 1em;
-    padding: 8px;
-    text-align: center;
-    border-radius: 8px;
-    background-color: beige;
-    user-select: none;
-    cursor: pointer;
+> div.container {
+  width: 100%;
+  padding: 0 40px 0 0;
+  vertical-align: top;
 
-    &:hover {
-      background-color: bisque;
+  > h2 {
+    margin: 12px 0;
+  }
+
+  > .buttons {
+    margin: 16px 0;
+
+    .next {
+      width: 48px;
+      padding: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1em;
+      user-select: none;
+      text-align: center;
+      border-radius: 8px;
+      transition: .3s ease;
+      background-color: beige;
+
+      &:hover {
+        background-color: bisque;
+      }
+
+      &.disabled {
+        cursor: default;
+        background-color: lightgray;
+      }
+    }
+  }
+
+  > table {
+    td {
+      width: 20px;
+      padding: 0 8px;
+      text-align: center;
+
+      &:first-child {
+        width: 40px;
+        text-align: left;
+      }
     }
   }
 }

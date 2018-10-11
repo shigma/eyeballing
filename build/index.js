@@ -69,7 +69,6 @@ compiler.run((error, stat) => {
     console.log(stat.compilation.errors.join('\n'))
     process.exit(1)
   } else {
-    console.log('Bundle Succeed.')
     process.exit(0)
   }
 })
