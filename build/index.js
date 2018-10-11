@@ -2,6 +2,7 @@ const css = new (require('clean-css'))()
 const webpack = require('webpack')
 const program = require('commander')
 const html = require('html-minifier')
+const cp = require('child_process')
 const sfc2js = require('sfc2js')
 const path = require('path')
 const fs = require('fs')
@@ -13,7 +14,12 @@ function fullPath(...names) {
 program
   .option('-d, --dev')
   .option('-p, --prod')
+  .option('-t, --tsc')
   .parse(process.argv)
+
+if (program.tsc) {
+  cp.execSync('tsc -b')
+}
 
 sfc2js.install(require('@sfc2js/sass'), {
   outputStyle: 'compressed',

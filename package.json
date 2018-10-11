@@ -24,8 +24,8 @@
   "scripts": {
     "test": "eslint .",
     "start": "node .",
-    "build": "tsc -b && node build --prod",
-    "dev": "node build && node ."
+    "build": "node build -tp",
+    "dev": "node build -t && node ."
   },
   "author": "shigma <1700011071@pku.edu.cn>",
   "license": "MIT"

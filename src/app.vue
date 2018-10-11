@@ -1,12 +1,13 @@
 <script>
 
 const tests = require('./tests').default
-const tools = require('./tools').default
+const tools = require('./tools')
 
 module.exports = {
   data: () => ({
     mouse: null,
     index: 0,
+    tools: {},
   }),
 
   mounted() {
@@ -14,16 +15,26 @@ module.exports = {
     this._ctx = this.$refs.canvas.getContext('2d')
     this._ctx.lineCap = 'round'
     for (const key in tools) {
-      this._ctx[key] = tools[key].bind(this._ctx)
+      this.tools[key] = tools[key].bind(this._ctx)
     }
     this.refresh()
   },
 
   methods: {
     refresh() {
+      this._ctx.$points = []
+      this._ctx.lineWidth = 2
       this._ctx.clearRect(0, 0, 300, 400)
       const test = tests[this.index]
-      test.draw.call(this, this._ctx, test.dataset[0], this.mouse)
+      test.base.call(this.tools, test.dataset[0])
+      if (this.mouse) {
+        this._ctx.$userRelated = true
+        test.draw.call(this.tools, test.dataset[0], this.mouse)
+        this._ctx.$userRelated = false
+      }
+      this._ctx.lineWidth = 1
+      this._ctx.fillStyle = 'white'
+      this._ctx.$points.forEach(callback => callback.call(this._ctx))
     },
     onMousemove(event) {
       this.mouse = {

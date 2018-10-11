@@ -1,73 +1,83 @@
-import DrawTools from './tools'
-
-interface MousePosition {
-  x: number
-  y: number
-}
+import * as DrawTools from './tools'
 
 interface EyeballingTest<T extends object = Record<string, any>> {
-  name: string,
-  dataset: T[],
-  test(data: T): any,
-  draw(
-    ctx: CanvasRenderingContext2D & typeof DrawTools,
-    data: T,
-    mouse: MousePosition,
-  ): void
+  name: string
+  dataset: T[]
+  caption: string
+  base(this: typeof DrawTools, data: T): void
+  draw(this: typeof DrawTools, data: T, mouse: DrawTools.Point): void
+  test(this: typeof DrawTools, data: T, mouse: DrawTools.Point): any
 }
 
 const tests: EyeballingTest[] = [
   {
     name: 'midpoint',
-    dataset: [
-      {
-        x1: 200,
-        y1: 100,
-        x2: 100,
-        y2: 260,
-      },
-    ],
+    caption: 'Find the midpoint of the line segment.',
+    dataset: [{
+      p1: { x: 200, y: 100 },
+      p2: { x: 100, y: 260 },
+    }],
     test(data) {
       return {
         x: (data.x1 + data.x2) / 2,
         y: (data.y1 + data.y2) / 2
       }
     },
-    draw(ctx, data, mouse) {
-      if (mouse) {
-        ctx.segment(mouse.x, mouse.y, data.x1, data.y1)
-        ctx.segment(mouse.x, mouse.y, data.x2, data.y2)
-        ctx.point(mouse.x, mouse.y, 'blue')
-      }
-      ctx.point(data.x1, data.y1)
-      ctx.point(data.x2, data.y2)
+    base(data) {
+      this.point(data.p1)
+      this.point(data.p2)
+    },
+    draw(data, mouse) {
+      this.segment(mouse, data.p1)
+      this.segment(mouse, data.p2)
+      this.point(mouse)
     }
   },
   {
     name: 'bisect',
-    dataset: [
-      {
-        x0: 100,
-        y0: 280,
-        x1: 60,
-        y1: 120,
-        x2: 240,
-        y2: 160,
-      }
-    ],
-    test() {},
-    draw(ctx, data, mouse) {
-      if (mouse) {
-        ctx.halfline(data.x0, data.y0, mouse.x, mouse.y)
-        ctx.point(mouse.x, mouse.y, 'blue')
-      }
-      ctx.segment(data.x0, data.y0, data.x1, data.y1)
-      ctx.segment(data.x0, data.y0, data.x2, data.y2)
-      ctx.point(data.x0, data.y0)
-      ctx.point(data.x1, data.y1)
-      ctx.point(data.x2, data.y2)
+    caption: 'Bisect the angle.',
+    dataset: [{
+      p0: { x: 100, y: 280 },
+      p1: { x: 60, y: 120 },
+      p2: { x: 240, y: 160 },
+    }],
+    test(data, mouse) {
+      this.halfline(data.p0, mouse)
+    },
+    base(data) {
+      this.segment(data.p0, data.p1)
+      this.segment(data.p0, data.p2)
+      this.point(data.p0)
+      this.point(data.p1)
+      this.point(data.p2)
+    },
+    draw(data, mouse) {
+      this.halfline(data.p0, mouse)
+      this.point(mouse)
     }
-  }
+  },
+  {
+    name: 'parallelogram',
+    caption: 'Adjust to make a parallelogram.',
+    dataset: [{
+      p0: { x: 180, y: 80 },
+      p1: { x: 60, y: 120 },
+      p2: { x: 220, y: 160 },
+    }],
+    test() {},
+    base(data) {
+      this.segment(data.p1, data.p0)
+      this.segment(data.p2, data.p0)
+      this.point(data.p0)
+      this.point(data.p1)
+      this.point(data.p2)
+    },
+    draw(data, mouse) {
+      this.segment(data.p1, mouse)
+      this.segment(data.p2, mouse)
+      this.point(mouse)
+    }
+  },
 ]
 
 export default tests
