@@ -34,14 +34,36 @@ const tests: EyeballingTest[] = [
       }
     },
     draw(ctx, data, mouse) {
-      ctx.clearRect(0, 0, 300, 400)
-      ctx.lineCap = 'round'
-      ctx.lineWidth = 2
       if (mouse) {
         ctx.segment(mouse.x, mouse.y, data.x1, data.y1)
         ctx.segment(mouse.x, mouse.y, data.x2, data.y2)
         ctx.point(mouse.x, mouse.y, 'blue')
       }
+      ctx.point(data.x1, data.y1)
+      ctx.point(data.x2, data.y2)
+    }
+  },
+  {
+    name: 'bisect',
+    dataset: [
+      {
+        x0: 100,
+        y0: 280,
+        x1: 60,
+        y1: 120,
+        x2: 240,
+        y2: 160,
+      }
+    ],
+    test() {},
+    draw(ctx, data, mouse) {
+      if (mouse) {
+        ctx.halfline(data.x0, data.y0, mouse.x, mouse.y)
+        ctx.point(mouse.x, mouse.y, 'blue')
+      }
+      ctx.segment(data.x0, data.y0, data.x1, data.y1)
+      ctx.segment(data.x0, data.y0, data.x2, data.y2)
+      ctx.point(data.x0, data.y0)
       ctx.point(data.x1, data.y1)
       ctx.point(data.x2, data.y2)
     }

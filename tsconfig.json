@@ -2,8 +2,13 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es2018",
-    "noImplicitAny": true,
     "composite": true,
     "esModuleInterop": true,
-  }
+    "sourceMap": true,
+    "outDir": "temp",
+    "rootDir": "src",
+  },
+  "include": [
+    "src"
+  ]
 }

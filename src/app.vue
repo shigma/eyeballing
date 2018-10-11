@@ -1,17 +1,18 @@
 <script>
 
-const tests = require('./tests')
-const tools = require('./tools')
+const tests = require('./tests').default
+const tools = require('./tools').default
 
 module.exports = {
   data: () => ({
-    data: null,
     mouse: null,
+    index: 0,
   }),
 
   mounted() {
     window.vm = this
     this._ctx = this.$refs.canvas.getContext('2d')
+    this._ctx.lineCap = 'round'
     for (const key in tools) {
       this._ctx[key] = tools[key].bind(this._ctx)
     }
@@ -20,7 +21,9 @@ module.exports = {
 
   methods: {
     refresh() {
-      tests[0].draw.call(this, this._ctx, tests[0].dataset[0], this.mouse)
+      this._ctx.clearRect(0, 0, 300, 400)
+      const test = tests[this.index]
+      test.draw.call(this, this._ctx, test.dataset[0], this.mouse)
     },
     onMousemove(event) {
       this.mouse = {
@@ -30,6 +33,12 @@ module.exports = {
       this.refresh()
     },
     onMouseleave() {
+      this.mouse = null
+      this.refresh()
+    },
+    nextTest() {
+      this.index += 1
+      this.index %= tests.length
       this.mouse = null
       this.refresh()
     },
@@ -43,7 +52,7 @@ module.exports = {
     <div class="wrapper">
       <canvas height="400" width="300" ref="canvas"
         @mousemove="onMousemove" @mouseleave="onMouseleave"/>
-      <div class="next">Next</div>
+      <div class="next" @click="nextTest">Next</div>
     </div>
     <div>{{ 233 }}</div>
   </div>
@@ -85,6 +94,7 @@ module.exports = {
     text-align: center;
     border-radius: 8px;
     background-color: beige;
+    user-select: none;
     cursor: pointer;
 
     &:hover {

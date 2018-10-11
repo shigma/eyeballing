@@ -46,19 +46,6 @@ const compiler = webpack({
   target: 'web',
   mode: program.prod ? 'production' : 'development',
   entry: fullPath('temp/index.js'),
-  module: {
-    rules: [{
-      test: /\.ts$/,
-      use: 'ts-loader',
-    }]
-  },
-  resolve: {
-    extensions: [
-      '.ts',
-      '.js',
-      '.json',
-    ],
-  },
   output: {
     path: fullPath('docs'),
     filename: 'index.js',

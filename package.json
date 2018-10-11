@@ -24,7 +24,7 @@
   "scripts": {
     "test": "eslint .",
     "start": "node .",
-    "build": "node build --prod",
+    "build": "tsc -b && node build --prod",
     "dev": "node build && node ."
   },
   "author": "shigma <1700011071@pku.edu.cn>",
