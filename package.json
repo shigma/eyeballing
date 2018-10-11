@@ -16,7 +16,6 @@
     "node-sass": "^4.9.3",
     "opn": "^5.4.0",
     "sfc2js": "^3.3.2",
-    "ts-loader": "^5.2.1",
     "tslint": "^5.11.0",
     "typescript": "^3.1.2",
     "webpack": "^4.20.2"

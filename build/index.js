@@ -56,7 +56,6 @@ const compiler = webpack({
     path: fullPath('docs'),
     filename: 'index.js',
     libraryTarget: 'umd',
-    globalObject: 'typeof self !== \'undefined\' ? self : this',
   }
 })
 
