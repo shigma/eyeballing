@@ -2,8 +2,8 @@ import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
 
 export default {
-  name: 'circle center',
-  caption: 'Mark the center of the circle.',
+  name: '圆心',
+  caption: '标出给定圆的圆心。',
   dataset: [{
     o: { x: 130, y: 220 },
     r: 70,

@@ -1,14 +1,4 @@
-export interface Point {
-  x: number
-  y: number
-}
-
-export interface Line {
-  x: number
-  y: number
-  k: number
-  b: number
-}
+import { Point, Bezier } from './vector'
 
 function lineStrokeStyle(agent: string): string {
   switch(agent) {
@@ -26,11 +16,11 @@ function pointStrokeStyle(agent: string): string {
   }
 }
 
-export function bezier(p1: Point, p2: Point, p3: Point, p4: Point): void {
+export function bezier(c: Bezier): void {
   this.strokeStyle = lineStrokeStyle(this.$agent)
   this.beginPath()
-  this.moveTo(p1.x, p1.y)
-  this.bezierCurveTo(p2.x, p2.y, p3.x, p3.y, p4.x, p4.y)
+  this.moveTo(c.p1.x, c.p1.y)
+  this.bezierCurveTo(c.p2.x, c.p2.y, c.p3.x, c.p3.y, c.p4.x, c.p4.y)
   this.stroke()
 }
 

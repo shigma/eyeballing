@@ -11,16 +11,13 @@ module.exports = {
     contentHeight() {
       return this.windowHeight - 120
     },
-    contentStyle() {
-      return this.horizontal ? { height: this.contentHeight + 'px' } : {}
-    },
     canvasWidth() {
       return Math.min(this.contentHeight * 0.75, this.windowWidth / 2.4)
     },
     canvasStyle() {
       if (!this.horizontal) return { width: '300px', height: '400px' }
       const marginX = this.canvasWidth / 7.5 + 'px'
-      const marginY = (this.contentHeight - this.canvasWidth / 0.75) / 2 + 'px'
+      const marginY = (this.contentHeight - this.canvasWidth / 0.75) / 2 + 60 + 'px'
       return {
         width: this.canvasWidth + 'px',
         height: this.canvasWidth / 0.75 + 'px',
@@ -31,7 +28,11 @@ module.exports = {
       }
     },
     containerStyle() {
-      return this.horizontal ? { width: this.windowWidth - this.canvasWidth * 1.4 + 'px' } : {}
+      return this.horizontal ? {
+        marginTop: '40px',
+        marginBottom: '40px',
+        width: this.windowWidth - this.canvasWidth * 1.4 + 'px',
+      } : {}
     },
   },
 
@@ -61,7 +62,7 @@ module.exports = {
 </script>
 
 <template>
-  <div :class="{ horizontal }" :style="contentStyle">
+  <div :class="{ horizontal }">
     <div v-if="!horizontal" class="container">
       <slot name="heading"/>
     </div>

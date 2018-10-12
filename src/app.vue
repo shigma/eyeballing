@@ -149,16 +149,17 @@ module.exports = {
     <canvas slot="canvas" height="400" width="300" ref="canvas" :class="{ finished: status }"
       @mousemove="onMousemove" @mouseleave="onMouseleave" @mousedown="onMousedown"/>
     <template slot="heading">
-      <h2>{{ tests[index].name.replace(/^\w| \w/g, str => str.toUpperCase()) }}</h2>
-      <div class="caption">{{ tests[index].caption }}</div>
+      <h2>{{ tests[index].name }}</h2>
+      <p class="caption" v-html="tests[index].caption"/>
       <div class="buttons">
-        <div @click="nextTest">{{ status ? 'Next' : 'Skip' }}</div>
-        <div @click="clearResult">Clear</div>
-        <div @click="submit">Submit</div>
+        <div @click="nextTest">{{ status ? '下一题' : '跳过' }}</div>
+        <div @click="clearResult">清除</div>
+        <div @click="submit">提交</div>
       </div>
     </template>
     <template slot="result">
-      <h2>Result</h2>
+      <h2>计分板</h2>
+      <p>表格中显示的数值为对应测试的误差，越小说明越精确。</p>
       <table>
         <tr v-for="(_, testId) in results[0]" :key="testId">
           <td>{{ tests[testId].name }}</td>
@@ -215,8 +216,7 @@ canvas:not(.finished) {
       text-align: center;
 
       &:first-child {
-        width: 40px;
-        text-align: left;
+        width: 80px;
       }
     }
   }

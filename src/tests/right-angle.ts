@@ -2,8 +2,8 @@ import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
 
 export default {
-  name: 'right angle',
-  caption: 'Make a right angle.',
+  name: '直角',
+  caption: '过给定点作一个直角。',
   dataset: [{
     p0: { x: 100, y: 120 },
     p1: { x: 120, y: 280 },

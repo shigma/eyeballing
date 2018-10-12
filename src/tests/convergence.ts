@@ -2,8 +2,8 @@ import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
 
 export default {
-  name: 'convergence',
-  caption: 'Find the point of convergence.',
+  name: '交汇点',
+  caption: '找出三条线的交汇点。',
   dataset: [{
     p0: { x: 200, y: 300 },
     s1: { x: 5, y: -30 },

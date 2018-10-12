@@ -1,7 +1,3 @@
-import { Point, Line } from './palette'
-
-const origin: Point = { x: 0, y: 0 }
-
 type PointLike1 = Point | [Line, Line]
 type LineLike1 = Line | [Point, Point]
 type PointLike2 = Point | [LineLike1, LineLike1]
@@ -9,11 +5,25 @@ type LineLike2 = Line | [PointLike1, PointLike1]
 export type PointLike = Point | [LineLike2, LineLike2]
 export type LineLike = Line | [PointLike2, PointLike2]
 
-export function squareDist(p1: Point, p2: Point): number {
+export interface Point {
+  x: number
+  y: number
+}
+
+export interface Line {
+  x: number
+  y: number
+  k: number
+  b: number
+}
+
+export const origin: Point = { x: 0, y: 0 }
+
+export function squareDist(p1: Point, p2: Point = origin): number {
   return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
 }
 
-export function distance(p1: Point, p2: Point): number {
+export function distance(p1: Point, p2: Point = origin): number {
   return Math.sqrt(squareDist(p1, p2))
 }
 
@@ -31,6 +41,10 @@ export function cross(p1: Point, p2: Point): number {
 
 export function area(p1: Point, p2: Point, p3: Point): number {
   return cross(minus(p3, p1), minus(p2, p1)) / 2
+}
+
+export function normalize(p: Point, length = 1): Point {
+  return times(p, length / distance(p))
 }
 
 export function plus(p1: Point, p2: Point): Point {
@@ -111,5 +125,35 @@ export function intersect(l1: LineLike, l2: LineLike): Point {
   return {
     x: (l1.b - l2.b) / diff,
     y: (l2.k * l1.b - l1.k * l2.b) / diff,
+  }
+}
+
+export class Bezier {
+  p1: Point
+  p2: Point
+  p3: Point
+  p4: Point
+
+  constructor(p1: Point, p2: Point, p3: Point, p4: Point) {
+    this.p1 = p1
+    this.p2 = p2
+    this.p3 = p3
+    this.p4 = p4
+  }
+
+  _sum(r1: number, r2: number, r3: number, r4: number): Point {
+    return linearSum([this.p1, r1], [this.p2, r2], [this.p3, r3], [this.p4, r4])
+  }
+
+  r(t: number): Point {
+    return this._sum((1 - t) ** 3, 3 * t * (1 - t) ** 2, 3 * t ** 2 * (1 - t), t ** 3)
+  }
+
+  r1(t: number): Point {
+    return this._sum(0 - (1 - t) ** 2, (1 - 3 * t) * (1 - t), t * (2 - 3 * t), t ** 2)
+  }
+
+  r2(t: number): Point {
+    return this._sum(1 - t, 3 * t - 2, 1 - 3 * t, t)
   }
 }

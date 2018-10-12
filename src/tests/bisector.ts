@@ -2,8 +2,8 @@ import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
 
 export default {
-  name: 'bisect',
-  caption: 'Bisect the angle.',
+  name: '角平分线',
+  caption: '做出给定角的平分线。',
   dataset: [{
     p0: { x: 100, y: 280 },
     p1: { x: 60, y: 120 },

@@ -2,8 +2,8 @@ import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
 
 export default {
-  name: 'barycenter',
-  caption: 'Mark the barycenter of the triangle.',
+  name: '重心',
+  caption: '标出三角形的重心。\n重心是三角形三条中线的交点。',
   dataset: [{
     p1: { x: 80, y: 220 },
     p2: { x: 230, y: 200 },

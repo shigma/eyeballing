@@ -2,8 +2,8 @@ import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
 
 export default {
-  name: 'parallelogram',
-  caption: 'Adjust to make a parallelogram.',
+  name: '平行四边形',
+  caption: '标出形成平行四边形的最后一个点。',
   dataset: [{
     p0: { x: 180, y: 80 },
     p1: { x: 60, y: 120 },

@@ -2,8 +2,8 @@ import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
 
 export default {
-  name: 'midpoint',
-  caption: 'Find the midpoint of the line segment.',
+  name: '中点',
+  caption: '标出给定两点的中点。',
   dataset: [{
     p1: { x: 200, y: 100 },
     p2: { x: 100, y: 260 },

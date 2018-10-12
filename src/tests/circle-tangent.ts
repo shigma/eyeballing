@@ -2,8 +2,8 @@ import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
 
 export default {
-  name: 'tangent',
-  caption: 'Draw the tangent to the circle from the given point.',
+  name: '圆的切线',
+  caption: '作出圆在给定点处的切线。',
   dataset: [{
     o: { x: 180, y: 220 },
     r: 80,
