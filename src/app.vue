@@ -1,11 +1,15 @@
 <script>
 
-const tests = require('./tests').default
+const tests = require('./tests').tests
 const tools = require('./palette')
 
-const VERSION = '1.0'
+const VERSION = '1.1'
 
 module.exports = {
+  components: {
+    visFrame: require('./frame.vue'),
+  },
+
   data: () => ({
     tests,
     status: 0,
@@ -18,16 +22,8 @@ module.exports = {
   }),
 
   computed: {
-    test() {
-      return this.tests[this.index]
-    },
-    title() {
-      return this.test.name
-        .replace(/^\w|-\w/g, str => str.toUpperCase())
-        .replace(/-/g, ' ')
-    },
     data() {
-      const dataset = this.test.dataset
+      const dataset = this.tests[this.index].dataset
       return dataset[this.round % dataset.length]
     },
     round() {
@@ -74,20 +70,22 @@ module.exports = {
       this._ctx.$points = []
       this._ctx.lineWidth = 2
       this._ctx.clearRect(0, 0, 300, 400)
-      if (!this.data._init && this.test.init) {
-        this.test.init(this.data)
-        this.data._init = true
+      const test = this.tests[this.index]
+      const data = test.dataset[this.round % test.dataset.length]
+      if (!data._init && test.init) {
+        test.init(data)
+        data._init = true
       }
-      if (this.test.base) {
-        this.test.base.call(this.tools, this.data)
+      if (test.base) {
+        test.base.call(this.tools, data)
       }
-      if (this.mouse && this.test.draw) {
+      if (this.mouse && test.draw) {
         this._ctx.$agent = 'user'
-        this.test.draw.call(this.tools, this.data, this.mouse)
+        test.draw.call(this.tools, data, this.mouse)
       }
-      if (this.status && this.test.test) {
+      if (this.status && test.test) {
         this._ctx.$agent = 'test'
-        const diff = this.test.test.call(this.tools, this.data, this.mouse)
+        const diff = test.test.call(this.tools, data, this.mouse)
         this.result[this.index] = diff < 100 ? diff : 'failed'
       }
       this._ctx.lineWidth = 1
@@ -97,8 +95,8 @@ module.exports = {
     onMousemove(event) {
       if (this.status) return
       this.mouse = {
-        x: event.offsetX,
-        y: event.offsetY,
+        x: event.offsetX / event.target.offsetWidth * 300,
+        y: event.offsetY / event.target.offsetHeight * 400,
       }
       this.refresh()
     },
@@ -131,89 +129,69 @@ module.exports = {
       this.results = [ new Array(tests.length) ]
       this.index = 0
       this.status = 0
+      this.refresh()
     },
-    showDiff(roundId, testId) {
+    diffText(roundId, testId) {
       const diff = this.results[roundId][testId]
       if (typeof diff !== 'number') {
         return roundId === this.round && testId === this.index ? '??' : '--'
       }
       return diff.toFixed(3).slice(0, 5)
     },
+    submit() {},
   },
 }
 
 </script>
 
 <template>
-  <div>
-    <canvas height="400" width="300" ref="canvas" :class="{ finished: status }"
+  <vis-frame>
+    <canvas slot="canvas" height="400" width="300" ref="canvas" :class="{ finished: status }"
       @mousemove="onMousemove" @mouseleave="onMouseleave" @mousedown="onMousedown"/>
-    <div class="container">
-      <h2>{{ title }}</h2>
-      <div class="caption">{{ test.caption }}</div>
+    <template slot="heading">
+      <h2>{{ tests[index].name.replace(/^\w| \w/g, str => str.toUpperCase()) }}</h2>
+      <div class="caption">{{ tests[index].caption }}</div>
       <div class="buttons">
         <div @click="nextTest">{{ status ? 'Next' : 'Skip' }}</div>
         <div @click="clearResult">Clear</div>
+        <div @click="submit">Submit</div>
       </div>
-      <hr/>
+    </template>
+    <template slot="result">
       <h2>Result</h2>
       <table>
         <tr v-for="(_, testId) in results[0]" :key="testId">
           <td>{{ tests[testId].name }}</td>
           <td v-for="(result, roundId) in results" :key="roundId">
-            {{ showDiff(roundId, testId) }}
+            {{ diffText(roundId, testId) }}
           </td>
         </tr>
       </table>
-    </div>
-  </div>
+    </template>
+  </vis-frame>
 </template>
 
 <style lang="scss" scoped>
 
-& {
-  top: 0;
-  bottom: 0;
-  width: 100vw;
-  margin: auto;
-  display: table;
-  position: absolute;
+canvas:not(.finished) {
+  cursor: pointer;
 }
 
-> * {
-  position: relative;
-  display: table-cell;
-}
-
-> canvas {
-  margin: 0 40px;
-  border: 1px solid;
-  vertical-align: middle;
-
-  &:not(.finished) {
-    cursor: pointer;
-  }
-}
-
-> div.container {
-  width: 100%;
-  padding: 0 40px 0 0;
-  vertical-align: top;
-
+> .container {
   > h2 {
     margin: 12px 0;
   }
 
   > .buttons {
     margin: 16px 0;
+    user-select: none;
 
     > div {
-      width: 48px;
+      width: 56px;
       padding: 8px;
       cursor: pointer;
       font-size: 16px;
       line-height: 1em;
-      user-select: none;
       text-align: center;
       border-radius: 8px;
       transition: .3s ease;

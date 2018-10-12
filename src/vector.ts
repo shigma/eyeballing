@@ -1,5 +1,7 @@
 import { Point, Line } from './palette'
 
+const origin: Point = { x: 0, y: 0 }
+
 type PointLike1 = Point | [Line, Line]
 type LineLike1 = Line | [Point, Point]
 type PointLike2 = Point | [LineLike1, LineLike1]
@@ -52,6 +54,16 @@ export function times(p: Point, r: number): Point {
   }
 }
 
+export function linearSum(...pp: [Point, number?][]): Point {
+  return pp.reduce((prev, curr) => {
+    const prop = curr[1] || 1
+    return plus(prev, {
+      x: prop * curr[0].x,
+      y: prop * curr[0].y,
+    })
+  }, origin)
+}
+
 export function center(...pp: Point[]): Point {
   const { length } = pp
   const p0 = pp.shift()
@@ -67,6 +79,21 @@ export function division(p1: Point, p2: Point, port1 = 1, port2 = 1): Point {
   return {
     x: (p1.x * port1 + p2.x * port2) / sum,
     y: (p1.y * port1 + p2.y * port2) / sum,
+  }
+}
+
+export function polar(rho: number, theta: number, p = origin): Point {
+  return {
+    x: p.x + rho * Math.cos(theta),
+    y: p.y + rho * Math.sin(theta),
+  }
+}
+
+export function rotate(o: Point, p: Point, theta: number): Point {
+  const d = minus(p, o), c = Math.cos(theta), s = Math.sin(theta)
+  return {
+    x: o.x + d.x * c - d.y * s,
+    y: o.y + d.y * c + d.x * s,
   }
 }
 

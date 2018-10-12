@@ -26,6 +26,14 @@ function pointStrokeStyle(agent: string): string {
   }
 }
 
+export function bezier(p1: Point, p2: Point, p3: Point, p4: Point): void {
+  this.strokeStyle = lineStrokeStyle(this.$agent)
+  this.beginPath()
+  this.moveTo(p1.x, p1.y)
+  this.bezierCurveTo(p2.x, p2.y, p3.x, p3.y, p4.x, p4.y)
+  this.stroke()
+}
+
 export function circle(p: Point, r: number): void {
   this.strokeStyle = lineStrokeStyle(this.$agent)
   this.beginPath()
