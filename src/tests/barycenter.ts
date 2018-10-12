@@ -3,7 +3,7 @@ import { Eyeballing } from '../tests'
 
 export default {
   name: '重心',
-  caption: '标出三角形的重心。\n重心是三角形三条中线的交点。',
+  caption: '标出三角形的重心。\n重心是三角形<strong>三条中线的交点</strong>。',
   dataset: [{
     p1: { x: 80, y: 220 },
     p2: { x: 230, y: 200 },

@@ -4,6 +4,7 @@
   "main": "index.js",
   "description": "An eyeballing test.",
   "dependencies": {
+    "file-saver": "^2.0.0-rc.3",
     "vue": "^2.5.17"
   },
   "devDependencies": {

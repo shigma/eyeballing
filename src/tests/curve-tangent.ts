@@ -14,7 +14,6 @@ export default {
   init(data) {
     data.c = new Vector.Bezier(data.p1, data.p2, data.p3, data.p4)
     data.p = data.c.r(data.t)
-    data.q = Vector.plus(data.p, data.c.r1(data.t))
   },
   base({ c, p }) {
     this.bezier(c)
@@ -23,9 +22,9 @@ export default {
   draw({ p }, mouse) {
     this.line(p, mouse)
   },
-  test({ q, p, p1, p4 }, mouse) {
+  test({ p, c, t, p1, p4 }, mouse) {
+    const q = Vector.plus(p, c.r1(t))
     this.line(p, q)
-    const angle = Vector.angle(p, q, mouse)
-    return Math.abs(angle) * Vector.distance(p1, p4)
+    return Math.abs(Vector.angle(p, q, mouse)) * Vector.distance(p1, p4)
   }
 } as Eyeballing

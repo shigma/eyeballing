@@ -30,7 +30,7 @@ export default {
       Vector.rotate(Vector.origin, r1, Math.PI / 2),
       Vector.distance(r1) ** 3 / Math.abs(Vector.cross(r1, r2)),
     ))
-    this.point(Vector.plus(p, Vector.rotate(Vector.origin, r1, Math.PI / 2)))
+    this.point(target)
     this.circle(target, Vector.distance(p, target))
     return Vector.distance(target, mouse)
   }
