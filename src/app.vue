@@ -3,8 +3,8 @@
 const tests = require('./tests')
 const tools = require('./palette')
 const saveAs = require('file-saver')
-const UAParser = require('ua-parser-js')
-const VERSION = '1.5'
+const shajs = require('sha.js')
+const VERSION = '1.5.1'
 const TEST_ROUND = 3
 
 function getAverage(array) {
@@ -73,13 +73,11 @@ module.exports = {
     this.TEST_ROUND = TEST_ROUND
     if (!this.results.length) {
       this.results.push(new Array(this.tests.length))
-      this.roundClean = true
     }
   },
 
   mounted() {
     window.vm = this
-    window.UAParser = UAParser
     this._ctx = this.$refs.canvas.getContext('2d')
     this._ctx.lineCap = 'round'
     this.tools = {}
@@ -112,7 +110,6 @@ module.exports = {
         this.results = storage.results
         this.index = storage.current
         this.status = 0
-        this.roundClean = this.results[this.round].every(diff => typeof diff !== 'number')
       }
       if (this._ctx) this.refresh()
     },
@@ -127,7 +124,6 @@ module.exports = {
     },
     clearResult() {
       this.results = [ new Array(this.tests.length) ]
-      this.roundClean = true
       this.baseRound = 0
       this.status = 0
       this.index = 0
@@ -137,7 +133,15 @@ module.exports = {
       this._ctx.$agent = 'base'
       this._ctx.$points = []
       this._ctx.lineWidth = 2
-      this._ctx.clearRect(0, 0, 300, 400)
+      if (this._ctx._index !== this.index || this.round !== this._ctx._round) {
+        this._ctx.setTransform(1, 0, 0, 1, 0, 0)
+        this._ctx.translate(150, 200)
+        this._ctx.rotate((Math.random() - 1 / 2) * Math.PI / 3)
+        this._ctx.translate(-150, -200)
+        this._ctx._index = this.index
+        this._ctx._round = this.round
+      }
+      this._ctx.clearRect(-150, -200, 600, 800)
       const dataset = this.test.dataset
       const data = dataset[(this.round + this.baseRound) % dataset.length]
       if (!data._init && this.test.init) {
@@ -155,7 +159,6 @@ module.exports = {
         this._ctx.$agent = 'test'
         const diff = this.test.test.call(this.tools, data, this.mouse)
         this.results[this.round][this.index] = diff
-        this.roundClean = false
       }
       this._ctx.lineWidth = 1
       this._ctx.fillStyle = 'white'
@@ -186,25 +189,23 @@ module.exports = {
         if (!this.status) return
         if (this.index === this.tests.length - 1 && this.results.length === TEST_ROUND) {
           const average = getAverage(this.results.map(getAverage)).toFixed(3).slice(0, 5)
-          const isTheFuckingEdgeBrowser = UAParser().browser.name === 'Edge'
           if (confirm(`\
 测试完成，感谢您的配合！
 您的总均分为：${average}。\n
-点击“确定”回到练习模式，点击“取消”返回测试页面。\
-${!isTheFuckingEdgeBrowser ? '' : `\n
-检测到你使用了 Edge 浏览器，请 F12 打开控制台后，复制最后一段输出的内容作为本次测试的结果文件。`}`)) {
+点击“确定”回到练习模式，点击“取消”返回测试页面。`)) {
             const output = JSON.stringify({
               version: VERSION,
+              hash: shajs('sha256').update(this.results).digest('hex'),
               tests: this.tests.map(({ name }) => name),
               results: this.results,
             })
-            if (isTheFuckingEdgeBrowser) {
-              console.log(output)
-            } else {
-              saveAs(new File([output], 'eyeballing-result.json', {
-                type: 'application/json;charset=utf-8'
-              }))
-            }
+            const timestring = new Date()
+              .toISOString()
+              .match(/\d{4}-(.+)\..+/)[1]
+              .replace(/[T:]/g, '-')
+            saveAs(new Blob([output], {
+              type: 'application/json;charset=utf-8'
+            }), `result-${timestring}.json`)
             this.testing = false
           }
           return
@@ -227,14 +228,13 @@ ${!isTheFuckingEdgeBrowser ? '' : `\n
       this.refresh()
     },
     newRound() {
-      if (this.roundClean) {
+      if (typeof this.results[this.round][this.index] !== 'number') {
         this.baseRound = (this.baseRound + 1) % this.test.dataset.length
-        return
-      }
-      this.results.push(new Array(this.tests.length))
-      this.roundClean = true
-      if (this.results.length > 10) {
-        this.results.shift()
+      } else {
+        this.results.push(new Array(this.tests.length))
+        if (this.results.length > 10) {
+          this.results.shift()
+        }
       }
     },
     diffText(roundId, testId) {

@@ -6,7 +6,7 @@
   "dependencies": {
     "file-saver": "^2.0.0-rc.3",
     "neat-scroll": "^2.0.1",
-    "ua-parser-js": "^0.7.18",
+    "sha.js": "^2.4.11",
     "vue": "^2.5.17"
   },
   "devDependencies": {
