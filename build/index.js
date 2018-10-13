@@ -32,20 +32,21 @@ const sfc = sfc2js.transpile({
   outCSSFile: null,
 })
 
-fs.writeFileSync(
-  fullPath('docs/index.html'),
-  html.minify(fs.readFileSync(fullPath('src/index.html')).toString(), {
-    collapseWhitespace: true,
-    removeAttributeQuotes: true,
-  })
-)
+const htmlString = html.minify(fs.readFileSync(fullPath('src/index.html')).toString(), {
+  collapseWhitespace: true,
+  removeAttributeQuotes: true,
+})
+
+fs.writeFileSync(fullPath('docs/index.html'), htmlString)
 
 const outCSS = css.minify(fs.readFileSync(fullPath('src/index.css')))
+const cssString = outCSS.styles + sfc.css
+
 if (outCSS.errors.length) {
   console.log(outCSS.errors.join('\n'))
   process.exit(1)
 } else {
-  fs.writeFileSync(fullPath('docs/index.css'), outCSS.styles + sfc.css)
+  fs.writeFileSync(fullPath('docs/index.css'), cssString)
 }
 
 const compiler = webpack({
@@ -68,7 +69,5 @@ compiler.run((error, stat) => {
   } else if (stat.compilation.errors.length) {
     console.log(stat.compilation.errors.join('\n'))
     process.exit(1)
-  } else {
-    process.exit(0)
   }
 })

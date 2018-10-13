@@ -28,6 +28,9 @@ module.exports = {
     testing: false,
     tests: tests.allItems,
     results: [],
+    settings: {
+      random_rotate: false,
+    },
   }),
 
   computed: {
@@ -133,7 +136,9 @@ module.exports = {
       this._ctx.$agent = 'base'
       this._ctx.$points = []
       this._ctx.lineWidth = 2
-      if (this._ctx._index !== this.index || this.round !== this._ctx._round) {
+      if (this.settings.random_rotate && (
+        this._ctx._index !== this.index || this.round !== this._ctx._round
+      )) {
         this._ctx.setTransform(1, 0, 0, 1, 0, 0)
         this._ctx.translate(150, 200)
         this._ctx.$angle = (Math.random() - 1 / 2) * Math.PI / 3
@@ -167,11 +172,18 @@ module.exports = {
     },
     onMousemove(event) {
       if (this.status) return
-      const x0 = event.offsetX / event.target.offsetWidth - 0.5
-      const y0 = event.offsetY / event.target.offsetHeight - 0.5
-      this.mouse = {
-        x: (x0 * Math.cos(this._ctx.$angle) + y0 * Math.sin(this._ctx.$angle)) * 300 + 150,
-        y: (y0 * Math.cos(this._ctx.$angle) - x0 * Math.sin(this._ctx.$angle)) * 400 + 200,
+      if (this.settings.random_rotate) {
+        const x0 = event.offsetX / event.target.offsetWidth - 0.5
+        const y0 = event.offsetY / event.target.offsetHeight - 0.5
+        this.mouse = {
+          x: (x0 * Math.cos(this._ctx.$angle) + y0 * Math.sin(this._ctx.$angle)) * 300 + 150,
+          y: (y0 * Math.cos(this._ctx.$angle) - x0 * Math.sin(this._ctx.$angle)) * 400 + 200,
+        }
+      } else {
+        this.mouse = {
+          x: event.offsetX / event.target.offsetWidth * 300,
+          y: event.offsetY / event.target.offsetHeight * 400,
+        }
       }
       this.refresh()
     },
