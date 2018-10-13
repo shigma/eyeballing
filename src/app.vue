@@ -148,23 +148,29 @@ module.exports = {
       this.refresh()
     },
     nextTest() {
-      if (this.testing && !this.status) return
+      if (this.testing) {
+        if (!this.status) return
+        if (this.index === this.tests.length - 1 && this.results.length >= TEST_ROUND) {
+          const average = getAverage(this.results.map(getAverage)).toFixed(3).slice(0, 5)
+          if (confirm(`\
+测试完成，感谢您的配合！
+您的总均分为：${average}。\n
+点击“确定”回到练习模式，点击“取消”返回测试页面。`)) {
+            saveAs(new File([JSON.stringify({
+              version: VERSION,
+              tests: this.tests.map(({ name }) => name),
+              results: this.results,
+            })], 'eyeballing-result.json', { type: 'application/json;charset=utf-8' }))
+            this.testing = false
+          }
+          return
+        }
+      }
       this.status = 0
       this.index += 1
-      if (this.index >= this.tests.length) {
+      if (this.index === this.tests.length) {
         this.index = 0
-        if (this.testing && this.results.length >= TEST_ROUND) {
-          const average = getAverage(this.results.map(getAverage)).toFixed(3).slice(0, 5)
-          alert(`\
-测试完成，感谢您的配合！\n
-您的总均分为：${average}。`)
-          saveAs(new File([JSON.stringify({
-            version: VERSION,
-            tests: this.tests.map(({ name }) => name),
-            results: this.results,
-          })], 'eyeballing-result.json', { type: 'application/json;charset=utf-8' }))
-          this.testing = false
-        } else if (this.results[this.round].some(diff => typeof diff === 'number')) {
+        if (this.results[this.round].some(diff => typeof diff === 'number')) {
           this.results.push(new Array(this.tests.length))
           if (this.results.length > 10) {
             this.results.shift()
@@ -207,7 +213,7 @@ module.exports = {
         <div class="button" @click="toggleTest">
           {{ testing ? '退出测试' : '开始测试' }}
         </div>
-        <div class="button" @click="nextTest" :class="{ disabled: !status && testing }">
+        <div class="button" :class="{ disabled: !status && testing }" @click="nextTest">
           {{ status || testing
             ? round === TEST_ROUND - 1 && index === tests.length - 1
             ? '结束测试'
