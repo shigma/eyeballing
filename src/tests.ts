@@ -14,34 +14,43 @@ export interface Eyeballing<T extends object = Record<string, any>> {
 import barycenter from './tests/barycenter'
 import bisector from './tests/bisector'
 import circleCenter from './tests/circle-center'
-import circleTangent from './tests/circle-tangent'
 import circumcenter from './tests/circumcenter'
 import convergence from './tests/convergence'
-import curvatureCircle from './tests/curvature-circle'
-import curveTangent from './tests/curve-tangent'
+import curvatureCircle1 from './tests/curvature-circle-1'
+import curvatureCircle2 from './tests/curvature-circle-2'
+import incenter from './tests/incenter'
 import midpoint from './tests/midpoint'
+import orthocenter from './tests/orthocenter'
 import parallelogram from './tests/parallelogram'
 import rightAngle from './tests/right-angle'
+import tangent1 from './tests/tangent-1'
+import tangent2 from './tests/tangent-2'
 
 export const allItems = [
   barycenter,
   bisector,
   circleCenter,
-  circleTangent,
   circumcenter,
   convergence,
-  curvatureCircle,
-  curveTangent,
+  curvatureCircle1,
+  curvatureCircle2,
+  incenter,
   midpoint,
+  orthocenter,
   parallelogram,
   rightAngle,
+  tangent1,
+  tangent2,
 ]
 
 export const testItems = [
+  midpoint,
   circleCenter,
   barycenter,
-  rightAngle,
+  incenter,
+  orthocenter,
   convergence,
-  curveTangent,
-  curvatureCircle,
+  tangent2,
+  curvatureCircle1,
+  curvatureCircle2,
 ]

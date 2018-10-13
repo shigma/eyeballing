@@ -3,8 +3,8 @@
 const tests = require('./tests')
 const tools = require('./palette')
 const saveAs = require('file-saver')
-const VERSION = '1.3'
-const TEST_ROUND = 4
+const VERSION = '1.4'
+const TEST_ROUND = 3
 
 function getAverage(array) {
   return array.reduce((prev, curr) => prev + curr) / array.length

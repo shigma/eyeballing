@@ -1,22 +1,14 @@
 import * as Vector from '../vector'
 import { Eyeballing } from '../tests'
+import Bezier from '../data/bezier'
 
 export default {
-  name: '曲线的切线',
+  name: '切线 2',
   caption: '作出曲线在给定点处的切线。',
-  dataset: [{
-    p1: { x: 80, y: 120 },
-    p2: { x: 180, y: 100 },
-    p3: { x: 160, y: 220 },
-    p4: { x: 240, y: 240 },
-    t: 0.5,
-  }, {
-    p1: { x: 120, y: 280 },
-    p2: { x: 240, y: 240 },
-    p3: { x: 160, y: 220 },
-    p4: { x: 80, y: 80 },
-    t: 0.7,
-  }],
+  dataset: [
+    { ...Bezier[0], t: 0.5 },
+    { ...Bezier[1], t: 0.4 },
+  ],
   init(data) {
     data.c = new Vector.Bezier(data.p1, data.p2, data.p3, data.p4)
     data.p = data.c.r(data.t)

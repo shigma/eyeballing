@@ -48,6 +48,10 @@ export function cross(p1: Point, p2: Point): number {
   return p1.x * p2.y - p1.y * p2.x
 }
 
+export function crossSum(p1: Point, p2: Point, p3: Point): number {
+  return cross(p1, p2) + cross(p2, p3) + cross(p3, p1)
+}
+
 export function area(p1: Point, p2: Point, p3: Point): number {
   return cross(minus(p3, p1), minus(p2, p1)) / 2
 }
@@ -74,6 +78,13 @@ export function times(p: Point, r: number): Point {
   return {
     x: p.x * r,
     y: p.y * r,
+  }
+}
+
+export function divide(p: Point, r: number): Point {
+  return {
+    x: p.x / r,
+    y: p.y / r,
   }
 }
 
@@ -123,6 +134,7 @@ export function rotate(o: Point, p: Point, theta: number): Point {
 export function connect(p1: PointLike, p2: PointLike): Line {
   if (p1 instanceof Array) p1 = intersect(...p1)
   if (p2 instanceof Array) p2 = intersect(...p2)
+  if (!p1 || !p2) return null
   const k = (p2.y - p1.y) / (p2.x - p1.x)
   return { ...p1, k, b: p1.y - k * p1.x }
 }
@@ -130,6 +142,7 @@ export function connect(p1: PointLike, p2: PointLike): Line {
 export function intersect(l1: LineLike, l2: LineLike): Point {
   if (l1 instanceof Array) l1 = connect(...l1)
   if (l2 instanceof Array) l2 = connect(...l2)
+  if (!l1 || !l2) return null
   const diff = l2.k - l1.k
   return {
     x: (l1.b - l2.b) / diff,

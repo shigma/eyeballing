@@ -42,8 +42,9 @@ export function segment(p1: Point, p2: Point, width = 2): void {
   this.lineWidth = lineWidth
 }
 
-export function segmentAmong(...pp: Point[]): void {
+export function segmentAmong(pp: Point[], width = 2): void {
   let p1: Point, p2: Point
+  pp = pp.filter(p => p)
   const p0 = pp.shift()
   if (p0.x - pp[0].x) {
     p1 = pp.reduce((prev, curr) => prev.x < curr.x ? prev : curr, p0)
@@ -52,7 +53,24 @@ export function segmentAmong(...pp: Point[]): void {
     p1 = pp.reduce((prev, curr) => prev.y < curr.y ? prev : curr, p0)
     p2 = pp.reduce((prev, curr) => prev.y > curr.y ? prev : curr, p0)
   }
-  segment.call(this, p1, p2)
+  segment.call(this, p1, p2, width)
+}
+
+export function segmentBesides(pp: Point[], p: Point, width = 2): void {
+  let p1: Point, p2: Point
+  pp = pp.filter(p => p)
+  const p0 = pp.shift()
+  if (p0.x - pp[0].x) {
+    p1 = pp.reduce((prev, curr) => prev.x < curr.x ? prev : curr, p0)
+    p2 = pp.reduce((prev, curr) => prev.x > curr.x ? prev : curr, p0)
+    if (p1.x > p.x) segment.call(this, p1, p, width)
+    if (p2.x < p.x) segment.call(this, p2, p, width)
+  } else {
+    p1 = pp.reduce((prev, curr) => prev.y < curr.y ? prev : curr, p0)
+    p2 = pp.reduce((prev, curr) => prev.y > curr.y ? prev : curr, p0)
+    if (p1.y > p.y) segment.call(this, p1, p, width)
+    if (p2.y < p.y) segment.call(this, p2, p, width)
+  }
 }
 
 export function halfline(p1: Point, p2: Point, width = 2): void {
