@@ -3,6 +3,7 @@
 const tests = require('./tests')
 const tools = require('./palette')
 const saveAs = require('file-saver')
+const UAParser = require('ua-parser-js')
 const VERSION = '1.5'
 const TEST_ROUND = 3
 
@@ -17,11 +18,14 @@ module.exports = {
   },
 
   data: () => ({
+    timing: false,
+    restTime: 0,
+    startTime: 0,
     index: 0,
     status: 0,
     mouse: null,
     baseRound: 0,
-    isTesting: false,
+    testing: false,
     tests: tests.allItems,
     results: [],
   }),
@@ -30,22 +34,37 @@ module.exports = {
     round() {
       return this.results.length - 1
     },
-    testing: {
-      get() {
-        return this.isTesting
-      },
-      set(value) {
-        if (this.isTesting === value) return
-        this.isTesting = value
-        if (value) {
-          this.saveHistory()
-          this.tests = tests.testItems
-          this.clearResult()
-        } else {
-          this.tests = tests.allItems
-          this.loadHistory()
-        }
-      },
+    test() {
+      return this.tests[this.index]
+    },
+    remaining() {
+      const time = Math.floor(this.restTime / 1000)
+      const mm = String(Math.floor(time / 60)).padStart(2, '0')
+      const ss = String(Math.floor(time % 60)).padStart(2, '0')
+      return `${mm}:${ss}`
+    },
+  },
+
+  watch: {
+    testing(value) {
+      if (value) {
+        this.restTime = 600000
+        this.startTime = performance.now()
+        this.saveHistory()
+        this.tests = tests.testItems
+        this.clearResult()
+      } else {
+        this.startTime = 0
+        this.tests = tests.allItems
+        this.loadHistory()
+      }
+    },
+    restTime(value) {
+      if (!this.testing || value > 0) return
+      if (this.index < this.tests.length - 1 || this.results.length < TEST_ROUND) {
+        alert('时间已到，测试结束。')
+        this.testing = false
+      }
     },
   },
 
@@ -60,6 +79,7 @@ module.exports = {
 
   mounted() {
     window.vm = this
+    window.UAParser = UAParser
     this._ctx = this.$refs.canvas.getContext('2d')
     this._ctx.lineCap = 'round'
     this.tools = {}
@@ -67,6 +87,14 @@ module.exports = {
       this.tools[key] = tools[key].bind(this._ctx)
     }
     this.refresh()
+
+    setInterval(() => {
+      if (this.startTime) {
+        const now = performance.now()
+        this.restTime -= now - this.startTime
+        this.startTime = now
+      }
+    }, 100)
 
     addEventListener('beforeunload', () => {
       if (!this.testing) this.saveHistory()
@@ -110,22 +138,22 @@ module.exports = {
       this._ctx.$points = []
       this._ctx.lineWidth = 2
       this._ctx.clearRect(0, 0, 300, 400)
-      const test = this.tests[this.index]
-      const data = test.dataset[(this.round + this.baseRound) % test.dataset.length]
-      if (!data._init && test.init) {
-        test.init(data)
+      const dataset = this.test.dataset
+      const data = dataset[(this.round + this.baseRound) % dataset.length]
+      if (!data._init && this.test.init) {
+        this.test.init(data)
         data._init = true
       }
-      if (test.base) {
-        test.base.call(this.tools, data)
+      if (this.test.base) {
+        this.test.base.call(this.tools, data)
       }
-      if (this.mouse && test.draw) {
+      if (this.mouse && this.test.draw) {
         this._ctx.$agent = 'user'
-        test.draw.call(this.tools, data, this.mouse)
+        this.test.draw.call(this.tools, data, this.mouse)
       }
-      if (this.status && test.test) {
+      if (this.status && this.test.test) {
         this._ctx.$agent = 'test'
-        const diff = test.test.call(this.tools, data, this.mouse)
+        const diff = this.test.test.call(this.tools, data, this.mouse)
         this.results[this.round][this.index] = diff
         this.roundClean = false
       }
@@ -149,27 +177,40 @@ module.exports = {
     onMousedown() {
       if (this.status) return
       this.status = 1
+      this.restTime -= performance.now() - this.startTime
+      this.startTime = 0
       this.refresh()
     },
     nextTest() {
       if (this.testing) {
         if (!this.status) return
-        if (this.index === this.tests.length - 1 && this.results.length >= TEST_ROUND) {
+        if (this.index === this.tests.length - 1 && this.results.length === TEST_ROUND) {
           const average = getAverage(this.results.map(getAverage)).toFixed(3).slice(0, 5)
+          const isTheFuckingEdgeBrowser = UAParser().browser.name === 'Edge'
           if (confirm(`\
 测试完成，感谢您的配合！
 您的总均分为：${average}。\n
-点击“确定”回到练习模式，点击“取消”返回测试页面。`)) {
-            saveAs(new File([JSON.stringify({
+点击“确定”回到练习模式，点击“取消”返回测试页面。\
+${!isTheFuckingEdgeBrowser ? '' : `\n
+检测到你使用了 Edge 浏览器，请 F12 打开控制台后，复制最后一段输出的内容作为本次测试的结果文件。`}`)) {
+            const output = JSON.stringify({
               version: VERSION,
               tests: this.tests.map(({ name }) => name),
               results: this.results,
-            })], 'eyeballing-result.json', { type: 'application/json;charset=utf-8' }))
+            })
+            if (isTheFuckingEdgeBrowser) {
+              console.log(output)
+            } else {
+              saveAs(new File([output], 'eyeballing-result.json', {
+                type: 'application/json;charset=utf-8'
+              }))
+            }
             this.testing = false
           }
           return
         }
       }
+      this.startTime = performance.now()
       this.status = 0
       this.index += 1
       if (this.index === this.tests.length) {
@@ -187,7 +228,7 @@ module.exports = {
     },
     newRound() {
       if (this.roundClean) {
-        this.baseRound = (this.baseRound + 1) % TEST_ROUND
+        this.baseRound = (this.baseRound + 1) % this.test.dataset.length
         return
       }
       this.results.push(new Array(this.tests.length))
@@ -221,10 +262,10 @@ module.exports = {
 <template>
   <vis-frame>
     <canvas slot="canvas" height="400" width="300" ref="canvas" :class="{ finished: status }"
-      @mousemove="onMousemove" @mouseleave="onMouseleave" @mousedown="onMousedown"/>
+      @mousemove="onMousemove" @mousedown.left="onMousedown" @mouseleave="onMouseleave"/>
     <template slot="heading">
-      <h2>{{ tests[index].name }}</h2>
-      <p class="caption" v-html="tests[index].caption"/>
+      <h2>{{ test.name }}</h2>
+      <p class="caption" v-html="test.caption"/>
       <div class="buttons">
         <div class="button" @click="toggleTest">
           {{ testing ? '退出测试' : '开始测试' }}
@@ -242,9 +283,9 @@ module.exports = {
     </template>
     <template slot="result">
       <h2>计分板</h2>
-      <p v-if="testing">测试已经开始，完成测试后将自动回到练习模式。</p>
+      <p v-if="testing">测试已经开始。完成测试后点击“结束测试”将回到练习模式。剩余时间：{{ remaining }}</p>
       <p v-else>正在进行练习模式。点击“开始测试”进入测试模式。</p>
-      <p>表格中显示的数值为对应测试的误差，越小说明越精确。过大的误差将被判定为无效结果。</p>
+      <p>表格中显示的数值为对应测试的误差，越小说明越精确。</p>
       <vis-scroll direction="horizontal" class="result" ref="result"
         :style="{ height: 22 * Math.max(tests.length, 9) + 'px' }" :breadth="6" :radius="6">
         <div class="column">
