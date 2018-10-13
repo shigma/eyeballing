@@ -10,6 +10,12 @@ export default {
     p3: { x: 160, y: 220 },
     p4: { x: 240, y: 240 },
     t: 0.5,
+  }, {
+    p1: { x: 120, y: 280 },
+    p2: { x: 240, y: 240 },
+    p3: { x: 160, y: 220 },
+    p4: { x: 80, y: 80 },
+    t: 0.7,
   }],
   init(data) {
     data.c = new Vector.Bezier(data.p1, data.p2, data.p3, data.p4)
@@ -25,6 +31,6 @@ export default {
   test({ p, c, t, p1, p4 }, mouse) {
     const q = Vector.plus(p, c.r1(t))
     this.line(p, q)
-    return Math.abs(Vector.angle(p, q, mouse)) * Vector.distance(p1, p4)
+    return Vector.acuteAngle(p, q, mouse) * Vector.distance(p1, p4)
   }
 } as Eyeballing

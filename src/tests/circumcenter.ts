@@ -5,6 +5,10 @@ export default {
   name: '外心',
   caption: '标出三角形的外心。\n外心是<strong>到三角形三个顶点距离相等的点</strong>。',
   dataset: [{
+    p1: { x: 100, y: 220 },
+    p2: { x: 220, y: 200 },
+    p3: { x: 60, y: 100 },
+  }, {
     p1: { x: 80, y: 220 },
     p2: { x: 230, y: 200 },
     p3: { x: 200, y: 100 },
@@ -36,7 +40,7 @@ export default {
     this.segment(p1, target, 1)
     this.segment(p2, target, 1)
     this.segment(p3, target, 1)
-    this.circle(target, p1)
+    this.circle(target, Vector.distance(p1, target))
     return Vector.distance(target, mouse)
   },
 } as Eyeballing

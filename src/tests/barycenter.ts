@@ -8,6 +8,10 @@ export default {
     p1: { x: 80, y: 220 },
     p2: { x: 230, y: 200 },
     p3: { x: 200, y: 100 },
+  }, {
+    p1: { x: 100, y: 220 },
+    p2: { x: 220, y: 200 },
+    p3: { x: 60, y: 100 },
   }],
   init(data) {
     data.l1 = Vector.connect(data.p2, data.p3)

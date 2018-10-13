@@ -3,7 +3,8 @@
 const tests = require('./tests')
 const tools = require('./palette')
 const saveAs = require('file-saver')
-const VERSION = '1.2'
+const VERSION = '1.3'
+const TEST_ROUND = 4
 
 function getAverage(array) {
   return array.reduce((prev, curr) => prev + curr) / array.length
@@ -12,6 +13,7 @@ function getAverage(array) {
 module.exports = {
   components: {
     visFrame: require('./frame.vue'),
+    visScroll: require('./scroll.vue'),
   },
 
   data: () => ({
@@ -36,6 +38,8 @@ module.exports = {
         return this.isTesting
       },
       set(value) {
+        if (this.isTesting === value) return
+        this.isTesting = value
         if (value) {
           this.saveHistory()
           this.tests = tests.testItems
@@ -44,13 +48,13 @@ module.exports = {
           this.tests = tests.allItems
           this.loadHistory()
         }
-        this.isTesting = value
       },
     },
   },
 
   created() {
     this.loadHistory()
+    this.TEST_ROUND = TEST_ROUND
     if (!this.results.length) {
       this.results.push(new Array(this.tests.length))
     }
@@ -149,7 +153,7 @@ module.exports = {
       this.index += 1
       if (this.index >= this.tests.length) {
         this.index = 0
-        if (this.testing && this.results.length >= 3) {
+        if (this.testing && this.results.length >= TEST_ROUND) {
           const average = getAverage(this.results.map(getAverage)).toFixed(3).slice(0, 5)
           alert(`\
 测试完成，感谢您的配合！\n
@@ -183,11 +187,9 @@ module.exports = {
       } else {
         this.testing = confirm(`\
 测试开始后，计分板将暂时被重置（测试结束后可以复原）。
-你将遇到 3 组题目，每组 9 道题，中途不允许跳过，全部作答完毕后将保存成绩。
+你将遇到 ${TEST_ROUND} 组题目，每组 ${tests.testItems.length} 道题，中途不允许跳过，全部作答完毕后将保存成绩。
 你确定要开始测试吗？`)
       }
-    },
-    submit() {
     },
   },
 }
@@ -207,26 +209,32 @@ module.exports = {
         </div>
         <div class="button" @click="nextTest" :class="{ disabled: !status && testing }">
           {{ status || testing
-            ? round === 2 && index === tests.length - 1
+            ? round === TEST_ROUND - 1 && index === tests.length - 1
             ? '结束测试'
             : '下一题'
             : '跳过本题' }}
         </div>
-        <div class="button" v-if="testing" @click="submit">提交成绩</div>
-        <div class="button" v-else @click="clearResult">清除数据</div>
+        <div class="button" v-if="!testing" @click="clearResult">清除数据</div>
       </div>
     </template>
     <template slot="result">
       <h2>计分板</h2>
+      <p v-if="testing">测试已经开始，完成测试后将自动回到练习模式。</p>
+      <p v-else>正在进行练习模式。点击“开始测试”进入测试模式。</p>
       <p>表格中显示的数值为对应测试的误差，越小说明越精确。过大的误差将被判定为无效结果。</p>
-      <table>
-        <tr v-for="(_, testId) in results[0]" :key="testId">
-          <td>{{ tests[testId].name }}</td>
-          <td v-for="(result, roundId) in results" :key="roundId">
+      <vis-scroll direction="horizontal" class="result" ref="result"
+        :style="{ height: 22 * Math.max(tests.length, 9) + 'px' }" :breadth="6" :radius="6">
+        <div class="column">
+          <div class="cell" v-for="(test, index) in tests" :key="index">
+            {{ test.name }}
+          </div>
+        </div>
+        <div class="column" v-for="(round, roundId) in results" :key="roundId">
+          <div class="cell" v-for="(diff, testId) in round" :key="testId">
             {{ diffText(roundId, testId) }}
-          </td>
-        </tr>
-      </table>
+          </div>
+        </div>
+      </vis-scroll>
     </template>
   </vis-frame>
 </template>
@@ -254,7 +262,7 @@ canvas:not(.finished) {
       line-height: 1em;
       text-align: center;
       border-radius: 8px;
-      transition: .3s ease;
+      transition: background-color .3s ease;
       display: inline-block;
       background-color: beige;
 
@@ -273,11 +281,15 @@ canvas:not(.finished) {
     }
   }
 
-  > table {
-    td {
-      width: 20px;
-      padding: 0 8px;
-      text-align: center;
+  > .result {
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.4em;
+
+    .column {
+      width: 56px;
+      display: inline-block;
 
       &:first-child {
         width: 80px;

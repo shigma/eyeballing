@@ -12,6 +12,14 @@ export default {
     r1: [ 3, 6 ],
     r2: [ 3, 7 ],
     r3: [ 5, 11 ],
+  }, {
+    p0: { x: 100, y: 120 },
+    s1: { x: -5, y: 40 },
+    s2: { x: 25, y: 20 },
+    s3: { x: 8, y: 16 },
+    r1: [ 3, 6 ],
+    r2: [ 3, 6 ],
+    r3: [ 5, 11 ],
   }],
   init(data) {
     data.p11 = Vector.linearSum([data.p0], [data.s1, data.r1[0]])

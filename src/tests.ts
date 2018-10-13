@@ -40,8 +40,6 @@ export const allItems = [
 export const testItems = [
   circleCenter,
   barycenter,
-  circumcenter,
-  bisector,
   rightAngle,
   convergence,
   curveTangent,

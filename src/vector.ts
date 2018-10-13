@@ -31,6 +31,15 @@ export function angle(p0: Point, p1: Point, p2: Point): number {
   return Math.atan2(p2.y - p0.y, p2.x - p0.x) - Math.atan2(p1.y - p0.y, p1.x - p0.x)
 }
 
+export function acuteAngle(p0: Point, p1: Point, p2: Point): number {
+  const alpha = angle(p0, p1, p2)
+  return alpha <= - Math.PI / 2
+    ? Math.abs(alpha + Math.PI)
+    : alpha >= Math.PI / 2
+    ? Math.abs(Math.PI - alpha)
+    : Math.abs(alpha)
+}
+
 export function dot(p1: Point, p2: Point): number {
   return p1.x * p2.x + p1.y * p2.y
 }

@@ -5,6 +5,7 @@
   "description": "An eyeballing test.",
   "dependencies": {
     "file-saver": "^2.0.0-rc.3",
+    "neat-scroll": "^2.0.1",
     "vue": "^2.5.17"
   },
   "devDependencies": {

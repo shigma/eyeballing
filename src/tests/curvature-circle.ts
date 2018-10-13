@@ -5,6 +5,12 @@ export default {
   name: '曲率圆',
   caption: '画出曲线在给定点处你认为<strong>最贴合</strong>曲线的圆。',
   dataset: [{
+    p1: { x: 120, y: 280 },
+    p2: { x: 240, y: 240 },
+    p3: { x: 160, y: 220 },
+    p4: { x: 80, y: 80 },
+    t: 0.3,
+  }, {
     p1: { x: 80, y: 120 },
     p2: { x: 180, y: 100 },
     p3: { x: 160, y: 220 },
@@ -26,8 +32,9 @@ export default {
   test({ c, t, p }, mouse) {
     const r1 = c.r1(t)
     const r2 = c.r2(t)
+    const dir = Math.sign(Vector.angle(Vector.origin, r1, r2)) || 1
     const target = Vector.plus(p, Vector.normalize(
-      Vector.rotate(Vector.origin, r1, Math.PI / 2),
+      Vector.rotate(Vector.origin, r1, Math.PI / 2 * dir),
       Vector.distance(r1) ** 3 / Math.abs(Vector.cross(r1, r2)),
     ))
     this.point(target)

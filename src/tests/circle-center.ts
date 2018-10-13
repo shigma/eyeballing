@@ -7,6 +7,9 @@ export default {
   dataset: [{
     o: { x: 130, y: 220 },
     r: 70,
+  }, {
+    o: { x: 160, y: 160 },
+    r: 80,
   }],
   base({ o, r }) {
     this.circle(o, r)

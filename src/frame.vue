@@ -1,5 +1,7 @@
 <script>
 
+const NeatScroll = require('neat-scroll')
+
 module.exports = {
   data: () => ({
     windowWidth: 0,
@@ -29,8 +31,6 @@ module.exports = {
     },
     containerStyle() {
       return this.horizontal ? {
-        marginTop: '40px',
-        marginBottom: '40px',
         width: this.windowWidth - this.canvasWidth * 1.4 + 'px',
       } : {}
     },
@@ -41,6 +41,16 @@ module.exports = {
 
     addEventListener('resize', () => {
       this.updateSize()
+    })
+  },
+
+  mounted() {
+    const neatScroll = new NeatScroll(this.$refs.body)
+    this.$refs.body.addEventListener('mousewheel', (event) => {
+      if (!this.horizontal) return
+      neatScroll.scrollByDelta(event.deltaY)
+      event.stopPropagation()
+      event.preventDefault()
     })
   },
 
@@ -69,7 +79,7 @@ module.exports = {
     <div class="palette" :style="canvasStyle">
       <slot name="canvas"/>
     </div>
-    <div class="container" :style="containerStyle">
+    <div ref="body" class="container" :style="containerStyle">
       <template v-if="horizontal">
         <slot name="heading"/>
         <hr/>
@@ -110,9 +120,16 @@ module.exports = {
   }
 }
 
+> .container {
+  > *:first-child { margin-top: 24px }
+  > *:last-child { margin-bottom: 24px }
+}
+
 &.horizontal > .container {
-  margin-left: 4px;
+  height: 100%;
+  margin-left: -4px;
   vertical-align: top;
+  overflow-y: hidden;
 }
 
 &:not(.horizontal) > .container {

@@ -7,6 +7,9 @@ export default {
   dataset: [{
     p0: { x: 100, y: 120 },
     p1: { x: 120, y: 280 },
+  }, {
+    p0: { x: 80, y: 280 },
+    p1: { x: 240, y: 240 },
   }],
   base({ p1, p0 }) {
     this.point(p0)
