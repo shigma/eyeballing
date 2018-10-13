@@ -6,8 +6,9 @@ export default {
   name: '曲率圆 1',
   caption: '画出曲线在给定点处你认为<strong>最贴合</strong>曲线的圆。',
   dataset: [
-    { ...Bezier[0], t: 0.3 },
+    { ...Bezier[0], t: 0.25 },
     { ...Bezier[1], t: 0.3 },
+    { ...Bezier[2], t: 0.35 },
   ],
   init(data) {
     data.c = new Vector.Bezier(data.p1, data.p2, data.p3, data.p4)

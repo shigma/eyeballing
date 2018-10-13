@@ -8,6 +8,7 @@ export default {
   dataset: [
     { ...Bezier[0], t: 0.5 },
     { ...Bezier[1], t: 0.4 },
+    { ...Bezier[2], t: 0.3 },
   ],
   init(data) {
     data.c = new Vector.Bezier(data.p1, data.p2, data.p3, data.p4)

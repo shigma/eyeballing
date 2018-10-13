@@ -3,7 +3,7 @@
 const tests = require('./tests')
 const tools = require('./palette')
 const saveAs = require('file-saver')
-const VERSION = '1.4'
+const VERSION = '1.5'
 const TEST_ROUND = 3
 
 function getAverage(array) {
@@ -20,16 +20,13 @@ module.exports = {
     index: 0,
     status: 0,
     mouse: null,
+    baseRound: 0,
     isTesting: false,
     tests: tests.allItems,
     results: [],
   }),
 
   computed: {
-    data() {
-      const dataset = this.tests[this.index].dataset
-      return dataset[this.round % dataset.length]
-    },
     round() {
       return this.results.length - 1
     },
@@ -57,6 +54,7 @@ module.exports = {
     this.TEST_ROUND = TEST_ROUND
     if (!this.results.length) {
       this.results.push(new Array(this.tests.length))
+      this.roundClean = true
     }
   },
 
@@ -82,15 +80,18 @@ module.exports = {
         storage = JSON.parse(localStorage.getItem('shigma.eyeballing'))
       } catch (error) { null }
       if (storage && storage.version === VERSION) {
+        this.baseRound = storage.baseRound
         this.results = storage.results
         this.index = storage.current
         this.status = 0
+        this.roundClean = this.results[this.round].every(diff => typeof diff !== 'number')
       }
       if (this._ctx) this.refresh()
     },
     saveHistory() {
       if (this.status) this.nextTest()
       localStorage.setItem('shigma.eyeballing', JSON.stringify({
+        baseRound: this.baseRound,
         results: this.results,
         current: this.index,
         version: VERSION,
@@ -98,8 +99,10 @@ module.exports = {
     },
     clearResult() {
       this.results = [ new Array(this.tests.length) ]
-      this.index = 0
+      this.roundClean = true
+      this.baseRound = 0
       this.status = 0
+      this.index = 0
       this.refresh()
     },
     refresh() {
@@ -108,7 +111,7 @@ module.exports = {
       this._ctx.lineWidth = 2
       this._ctx.clearRect(0, 0, 300, 400)
       const test = this.tests[this.index]
-      const data = test.dataset[this.round % test.dataset.length]
+      const data = test.dataset[(this.round + this.baseRound) % test.dataset.length]
       if (!data._init && test.init) {
         test.init(data)
         data._init = true
@@ -124,6 +127,7 @@ module.exports = {
         this._ctx.$agent = 'test'
         const diff = test.test.call(this.tools, data, this.mouse)
         this.results[this.round][this.index] = diff
+        this.roundClean = false
       }
       this._ctx.lineWidth = 1
       this._ctx.fillStyle = 'white'
@@ -170,15 +174,27 @@ module.exports = {
       this.index += 1
       if (this.index === this.tests.length) {
         this.index = 0
-        if (this.results[this.round].some(diff => typeof diff === 'number')) {
-          this.results.push(new Array(this.tests.length))
-          if (this.results.length > 10) {
-            this.results.shift()
-          }
-        }
+        this.newRound()
       }
       this.mouse = null
       this.refresh()
+    },
+    nextRound() {
+      this.newRound()
+      this.status = 0
+      this.mouse = null
+      this.refresh()
+    },
+    newRound() {
+      if (this.roundClean) {
+        this.baseRound = (this.baseRound + 1) % TEST_ROUND
+        return
+      }
+      this.results.push(new Array(this.tests.length))
+      this.roundClean = true
+      if (this.results.length > 10) {
+        this.results.shift()
+      }
     },
     diffText(roundId, testId) {
       const diff = this.results[roundId][testId]
@@ -220,6 +236,7 @@ module.exports = {
             : '下一题'
             : '跳过本题' }}
         </div>
+        <div class="button" v-if="!testing" @click="nextRound">下一轮</div>
         <div class="button" v-if="!testing" @click="clearResult">清除数据</div>
       </div>
     </template>
