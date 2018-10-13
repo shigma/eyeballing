@@ -136,7 +136,8 @@ module.exports = {
       if (this._ctx._index !== this.index || this.round !== this._ctx._round) {
         this._ctx.setTransform(1, 0, 0, 1, 0, 0)
         this._ctx.translate(150, 200)
-        this._ctx.rotate((Math.random() - 1 / 2) * Math.PI / 3)
+        this._ctx.$angle = (Math.random() - 1 / 2) * Math.PI / 3
+        this._ctx.rotate(this._ctx.$angle)
         this._ctx.translate(-150, -200)
         this._ctx._index = this.index
         this._ctx._round = this.round
@@ -166,9 +167,11 @@ module.exports = {
     },
     onMousemove(event) {
       if (this.status) return
+      const x0 = event.offsetX / event.target.offsetWidth - 0.5
+      const y0 = event.offsetY / event.target.offsetHeight - 0.5
       this.mouse = {
-        x: event.offsetX / event.target.offsetWidth * 300,
-        y: event.offsetY / event.target.offsetHeight * 400,
+        x: (x0 * Math.cos(this._ctx.$angle) + y0 * Math.sin(this._ctx.$angle)) * 300 + 150,
+        y: (y0 * Math.cos(this._ctx.$angle) - x0 * Math.sin(this._ctx.$angle)) * 400 + 200,
       }
       this.refresh()
     },
