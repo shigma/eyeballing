@@ -300,7 +300,7 @@ module.exports = {
       <h2>计分板</h2>
       <p v-if="testing">测试已经开始。完成测试后点击“结束测试”将回到练习模式。剩余时间：{{ remaining }}</p>
       <p v-else>正在进行练习模式。点击“开始测试”进入测试模式。</p>
-      <p>表格中显示的数值为对应测试的误差，越小说明越精确。</p>
+      <p>表格中显示的数值为对应测试的误差，越小说明越精确。超过 50 的值将被认为是无效成绩。</p>
       <vis-scroll direction="horizontal" class="result" ref="result"
         :style="{ height: 22 * Math.max(tests.length, 9) + 'px' }" :breadth="6" :radius="6">
         <div class="column">
